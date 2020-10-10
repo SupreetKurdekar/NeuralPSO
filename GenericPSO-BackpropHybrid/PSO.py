@@ -8,45 +8,40 @@ import torch
 
 def pso(network,config):
 
-    nets = [network.Net() for i in range(config.pso["Number of Particles"])]
+    for iteration in range(config.pso["Number of Iterations"]):
 
-    bestParticles = [nutils.parameters_to_vector(net.parameters()) for net in nets ]
-    bestParticles = torch.stack(bestParticles)
+        nets = [network.Net() for i in range(config.pso["Number of Particles"])]
 
-
-    personal_best_evals = [1000000000000000.0]*len(nets)
-    global_best_eval = 10000000000000000.0
-    global_best_id = 0
-    funcEvals = []
-
-    # do gradient based training
-    for net in nets:
-        funcEvals.append(network.train(net,network.train_config))
-
-    currentParticles = []
-    # update personal best function evals and networks
-    # update the global best network id and the global best function value
-    for id,oldEval,newEval,particle,net in enumerate(zip(personal_best_evals,funcEvals,bestParticles,nets)):
-        currentParticles.append(nutils.parameters_to_vector(net.parameters()))
-        if newEval < oldEval:
-            oldEval = newEval
-            particle = nutils.parameters_to_vector(net.parameters())
-
-        if newEval < global_best_eval:
-            global_best_eval = newEval
-            global_best_id = id
-
-    currentParticles = torch.stack(currentParticles)
-
-    velocity = config.pso["alpha"]*currentParticles + config.pso["Local Beta"]*torch.rand(1)*bestParticles + config.pso["Gamma"]*torch
-    
-
-    
-
-    
-
-    
+        bestParticles = [nutils.parameters_to_vector(net.parameters()) for net in nets ]
+        bestParticles = torch.stack(bestParticles)
 
 
-    
-    return 0
+        personal_best_evals = [1000000000000000.0]*len(nets)
+        global_best_eval = 10000000000000000.0
+        global_best_id = 0
+        funcEvals = []
+
+        # do gradient based training
+        for net in nets:
+            funcEvals.append(network.train(net,network.train_config))
+
+        currentParticles = []
+        # update personal best function evals and networks
+        # update the global best network id and the global best function value
+        for id,oldEval,newEval,particle,net in enumerate(zip(personal_best_evals,funcEvals,bestParticles,nets)):
+            currentParticles.append(nutils.parameters_to_vector(net.parameters()))
+            if newEval < oldEval:
+                oldEval = newEval
+                particle = nutils.parameters_to_vector(net.parameters())
+
+            if newEval < global_best_eval:
+                global_best_eval = newEval
+                global_best_id = id
+
+        currentParticles = torch.stack(currentParticles)
+
+        velocity = config.pso["alpha"]*currentParticles + config.pso["Local Beta"]*torch.rand(1)*(bestParticles-currentParticles)\ 
+                    + (config.pso["Global Beta"]*torch.rand(1) - config.pso["Gamma"]*torch.rand(1))*(bestParticles[global_best_id]-currentParticles)
+        currentParticles = currentParticles + velocity
+
+        
