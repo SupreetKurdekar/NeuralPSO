@@ -46,7 +46,7 @@ class Allocator(torch.nn.Module):
         
         self.avgPool = nn.AdaptiveMaxPool2d(3)
         self.sigmoid = torch.nn.Sigmoid() # instead of Heaviside step fn
-        self.relu = torch.nn.ReLU()
+        self.relu = torch.nn.LeakyReLU()
     
     def forward(self, x,y):
         
@@ -70,10 +70,25 @@ class Allocator(torch.nn.Module):
         o2 = o2.unsqueeze(dim=1)
         o3 = o3.unsqueeze(dim=1)
 
-        O = torch.cat((o1,o2,o3),dim = 1)
+        O_prev = torch.cat((o1,o2,o3),dim = 1)
 
-        O = self.sigmoid(self.ConvF(O))
+        test = self.ConvF(O_prev)
+
+        
+
+        O = self.sigmoid(test)
+
+        if(torch.any(torch.isnan(O))):
+            print(O)
+            print("error")
+        if(torch.max(torch.abs(O))>1):
+            print("huge_number")
+
+
         O1 = O.round()
+
+        if(torch.max(torch.abs(O1))>1):
+            print("huge_number")
 
         return O1
 

@@ -23,22 +23,31 @@ import sys
 import objectiveFunction
 # import the os module
 import os
+import shutil
 
 # data set up
-taskData = torch.load("Dataset/taskConfig.pt")
+
+# number of task distributions to use
+batch_size = 800
+
+taskData = torch.load("mTSP_NNPSO/Dataset/taskConfig.pt")
 taskData = taskData.int()
-robotData = torch.load("Dataset/homeRobotState.pt")
-TaskStateBatch = taskData[0:2,:,:].float()
-RobotStateBatch = robotData.repeat(2,1,1).float()
+robotData = torch.load("mTSP_NNPSO/Dataset/homeRobotState.pt")
+TaskStateBatch = taskData[0:batch_size,:,:].float()
+RobotStateBatch = robotData.repeat(batch_size,1,1).float()
 
 # detect the current working directory and print it
 path = os.getcwd()
 print ("The current working directory is %s" % path)
 
-run_name = "DemoRun1"
-path = "D:\\NNPSO_Results"
+run_name = "1000_tasks"
+path = "/home/supreet/NeuralPSO/mTSP_NNPSO/results"
 newPath = os.path.join(path,run_name)
-os.mkdir(newPath)
+# os.mkdir(newPath)
+dir = newPath
+if os.path.exists(dir):
+    shutil.rmtree(dir)
+os.makedirs(dir)
 
 numNetworks = 50
 num_iterations = 500
@@ -46,7 +55,7 @@ listOfNetworks = []
 for i in range(numNetworks):
     listOfNetworks.append(vf.Allocator())
 
-alpha = 1
+alpha = 0.8
 BetaLocal = 2
 BetaGlobal = 2
 StagnationPenalty = 5
@@ -123,17 +132,20 @@ while iteration < num_iterations:
             velocityParams.data += r1*BetaLocal*(PbParam.data - networkParams.data) + r2*BetaGlobal*(GbNparams.data-networkParams.data)
             # params1.data += params2.data * beta
             # print(params1)
-    print("check")
-    print(objectiveFunction.objectivefunction(GbN,RobotStateBatch,TaskStateBatch,5,10))
-    print(GbCv)
+    # print("check")
+    # print(objectiveFunction.objectivefunction(GbN,RobotStateBatch,TaskStateBatch,5,10))
+    # print(GbCv)
     for network,velocity in zip(listOfNetworks,velocities):
         for networkParams,velocityParams in zip(network.parameters(),velocity.parameters()):
             networkParams.data = networkParams.data + velocityParams.data
 
-    print("Global",GbF,GbCv)
-    print(objectiveFunction.objectivefunction(GbN,RobotStateBatch,TaskStateBatch,5,10))
+            # clipping the weights to remain between range
+            networkParams.data = torch.clamp(networkParams.data,-1000,1000)
+
+    # print("Global",GbF,GbCv)
+    # print(objectiveFunction.objectivefunction(GbN,RobotStateBatch,TaskStateBatch,5,10))
     GlobalBesthistory.append((GbF,GbCv))
-    print("Avg",statistics.mean(PersonalBestFuncEvals),statistics.mean(PersonalBestCVs))
+    # print("Avg",statistics.mean(PersonalBestFuncEvals),statistics.mean(PersonalBestCVs))
     GlobalMeanHistory.append((statistics.mean(PersonalBestFuncEvals),statistics.mean(PersonalBestCVs)))
 
     if iteration % 10 == 0:

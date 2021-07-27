@@ -100,3 +100,19 @@ def updateModelWithNewWeightList(weightList,model):
     #     param.data = subArray
 
     return model
+
+def bool2int(x):
+    y = 0
+    for i,j in enumerate(x):
+        y += j<<i
+    return y
+
+a = np.array([0,0,0])
+
+b = bool2int(a)
+
+print(b)
+
+c = a.dot(1 << np.arange(a.shape[-1] - 1, -1, -1))-1
+
+print(c)
