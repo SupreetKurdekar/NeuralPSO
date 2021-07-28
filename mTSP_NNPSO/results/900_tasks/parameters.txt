@@ -1,0 +1,1 @@
+{'Num_Networks': 80, 'num_iterations': 500, 'alpha': 0.8, 'BetaLocal': 1.2, 'BetaGlobal': 1, 'StagnationPenalty': 5, 'InternalIterations': 10}

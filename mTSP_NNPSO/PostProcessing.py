@@ -1,8 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-GlobalData = np.loadtxt(fname = "mTSP_NNPSO\GlobalConvergence.txt")
-MeanData = np.loadtxt(fname = "mTSP_NNPSO\MeanConvergence.txt")
+glob_convergence_file = "/home/supreet/NeuralPSO/mTSP_NNPSO/results/1000_tasks/GlobalConvergence.txt"
+mean_convergence_file = "/home/supreet/NeuralPSO/mTSP_NNPSO/results/1000_tasks/MeanConvergence.txt"
+
+GlobalData = np.loadtxt(fname = glob_convergence_file)
+MeanData = np.loadtxt(fname = mean_convergence_file)
 
 print(GlobalData)
 print(MeanData)

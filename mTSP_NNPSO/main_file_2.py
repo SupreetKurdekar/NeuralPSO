@@ -28,7 +28,7 @@ import shutil
 # data set up
 
 # number of task distributions to use
-batch_size = 800
+batch_size = 900
 
 taskData = torch.load("mTSP_NNPSO/Dataset/taskConfig.pt")
 taskData = taskData.int()
@@ -40,7 +40,7 @@ RobotStateBatch = robotData.repeat(batch_size,1,1).float()
 path = os.getcwd()
 print ("The current working directory is %s" % path)
 
-run_name = "1000_tasks"
+run_name = "900_tasks"
 path = "/home/supreet/NeuralPSO/mTSP_NNPSO/results"
 newPath = os.path.join(path,run_name)
 # os.mkdir(newPath)
@@ -49,15 +49,15 @@ if os.path.exists(dir):
     shutil.rmtree(dir)
 os.makedirs(dir)
 
-numNetworks = 50
+numNetworks = 80
 num_iterations = 500
 listOfNetworks = []
 for i in range(numNetworks):
     listOfNetworks.append(vf.Allocator())
 
 alpha = 0.8
-BetaLocal = 2
-BetaGlobal = 2
+BetaLocal = 1.2
+BetaGlobal = 1
 StagnationPenalty = 5
 InternalIterations = 10
 
@@ -84,13 +84,13 @@ GlobalBesthistory = []
 GlobalMeanHistory = []
 iteration = 0
 while iteration < num_iterations:
-    TaskStateBatch = taskData[0:2,:,:].float()
-    RobotStateBatch = robotData.repeat(2,1,1).float()
+    TaskStateBatch = taskData[0:batch_size,:,:].float()
+    RobotStateBatch = robotData.repeat(batch_size,1,1).float()
     # local best update
     id = 0
     for network,PbF,PbCv,PbN in zip(listOfNetworks,PersonalBestFuncEvals,PersonalBestCVs,personalbestNetworks):
-        TaskStateBatch = taskData[0:2,:,:].float()
-        RobotStateBatch = robotData.repeat(2,1,1).float()
+        TaskStateBatch = taskData[0:batch_size,:,:].float()
+        RobotStateBatch = robotData.repeat(batch_size,1,1).float()
         funcEval,CViolation = objectiveFunction.objectivefunction(network,RobotStateBatch,TaskStateBatch,StagnationPenalty,InternalIterations)
         # funcEval,CViolation = criterion()objectiveFcn(network)
         if CViolation < PbCv: 
@@ -121,9 +121,9 @@ while iteration < num_iterations:
     
     # for personalBestFunc,personalbestCV in zip(PersonalBestFuncEvals,PersonalBestCVs):
 
-    print("Check1")
+    # print("Check1")
     print(objectiveFunction.objectivefunction(GbN,RobotStateBatch,TaskStateBatch,5,10))
-    print(GbCv)
+    # print(GbCv)
     for network,velocity,PbN in zip(listOfNetworks,velocities,personalbestNetworks):
         for GbNparams,networkParams,velocityParams, PbParam in zip(GbN.parameters(),network.parameters(),velocity.parameters(), PbN.parameters()):
             velocityParams.data *= alpha
