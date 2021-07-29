@@ -1,0 +1,11 @@
+weights to constraints
+run other 400
+
+issue with constraint - pushes all of them to move unnescearily
+
+ans1) penalize only when all robots are stagnant
+ans2) dont do ans1 but penalize if task not completed in time
+
+run with 16 locations
+
+mean?

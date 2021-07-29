@@ -94,6 +94,76 @@ def objectivefunction(model,RobotStateBatch,TaskStateBatch,k,max_iterations):
     constraintViolation = statistics.mean(stateConstViol)
     return functionEvaluation,constraintViolation
 
+def objectivefunction_for_visualisation(model,RobotStateBatch,TaskStateBatch,k,max_iterations):
+
+    ## lists for storing task ans robot updates each iteration
+    robotStateHistory = []
+    taskStateHistory = []
+
+    stateFuncEvals = [0 for i in range(TaskStateBatch.shape[0])]
+    stateConstViol = [0 for i in range(TaskStateBatch.shape[0])]
+    # max_iterations = 10
+
+    iterations = 0
+    while torch.sum(TaskStateBatch[:,0]) > 0 and iterations < max_iterations:
+        
+        output = model(TaskStateBatch.float(),RobotStateBatch.float())
+        Decision = output.squeeze().detach().numpy().astype(int)
+        # print(Decision.shape)
+        a = np.array([[1,1,1]]).T
+        a = a[np.newaxis,:,:]
+        Decision[:,-1,:][np.where(np.all(Decision == a,axis=1))] = 0
+
+        b = np.array([[0,0,0]]).T
+        b = b[np.newaxis,:,:]
+        Decision[:,-1,:][np.where(np.all(Decision == b,axis=1))] = 1
+
+        Decision = Decision.transpose(0,2,1)
+        TaskStateBatch = TaskStateBatch.detach().numpy().astype(int).transpose(0,2,1)
+        RobotStateBatch = RobotStateBatch.detach().numpy().astype(int).transpose(0,2,1)
+
+        # storing in history
+        robotStateHistory.append(RobotStateBatch)
+        taskStateHistory.append(TaskStateBatch)
+
+        id = 0
+        for case,task,robot in zip(Decision,TaskStateBatch,RobotStateBatch):
+            if np.sum(task[:,0]) != 0:
+                # print(case)
+                # print(task)
+                # print(robot)
+                case2 = copy.deepcopy(case)
+                c = case.dot(1 << np.arange(case.shape[-1] - 1, -1, -1))-1
+                # print(c)
+                newRobotPositions = task[c,1:3]
+                if np.all(newRobotPositions == robot[:,0:2]):
+                    stateConstViol[id] = stateConstViol[id] + 3*k
+                taskStatus = task[c,0]
+
+                numberCompletedTasksVisited = len(taskStatus) - np.count_nonzero(taskStatus)
+                stateConstViol[id] = stateConstViol[id] + numberCompletedTasksVisited
+
+                numberOfRobotsToSameTask = len(c)-len(np.unique(c))
+                stateConstViol[id] = stateConstViol[id] + numberOfRobotsToSameTask
+
+                # update task status
+                task[np.unique(c),0] = 0
+                # update robot distance status
+                robot[:,2] = robot[:,2] + LA.norm(task[c,1:3]-robot[:,0:2], axis=1)
+                stateFuncEvals[id] = stateFuncEvals[id] + np.sum(LA.norm(task[c,1:3]-robot[:,0:2], axis=1))
+                # update robot position status
+                robot[:,0:2] = newRobotPositions
+                # print(robot)
+            id = id+1
+        # print(TaskStateBatch)
+        TaskStateBatch = torch.from_numpy(TaskStateBatch.transpose(0,2,1)).int()
+        RobotStateBatch = torch.from_numpy(RobotStateBatch.transpose(0,2,1)).int()
+        iterations = iterations + 1
+    
+    functionEvaluation = statistics.mean(stateFuncEvals)
+    constraintViolation = statistics.mean(stateConstViol)
+    return functionEvaluation,constraintViolation,robotStateHistory,taskStateHistory
+
 def regularized_objectivefunction(model,RobotStateBatch,TaskStateBatch,k,max_iterations):
     stateFuncEvals = [0 for i in range(TaskStateBatch.shape[0])]
     stateConstViol = [0 for i in range(TaskStateBatch.shape[0])]
