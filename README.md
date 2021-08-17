@@ -57,8 +57,18 @@ PSO is applied with the weights of the network acting as the variables for optim
 The weights of the neural network are clipped to be within -1000 and 1000. This constricts the variable space and helps improve convergence.
 
 
-# Results
-
 # Demo
+
+Network performance before training.
+
+https://user-images.githubusercontent.com/49178343/129745660-6c56bb1d-121f-4602-8382-b36eb13fa242.mp4
+
+Network performance after training
+
+https://user-images.githubusercontent.com/49178343/129745256-cbbbe374-c330-43d6-82b0-7a787de6df75.mp4
+
+
+
+# Results
 
 # Limitations
