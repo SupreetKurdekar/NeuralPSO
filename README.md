@@ -25,8 +25,7 @@ Each task has a binary ID and the network outputs the ID of the task as an outpu
 
 # Network Architecture
 
-![image](https://user-images.githubusercontent.com/49178343/129748211-b4ac9951-1d3d-40dd-9536-22e56f5fe80c.png)
-
+![image](https://user-images.githubusercontent.com/49178343/129748522-0859ba38-6b27-4f92-b316-8d236373a847.png)
 
 # Training - using Particle Swarm Optimization
 
