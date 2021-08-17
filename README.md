@@ -68,7 +68,9 @@ Network performance after training
 https://user-images.githubusercontent.com/49178343/129745256-cbbbe374-c330-43d6-82b0-7a787de6df75.mp4
 
 
-
 # Results
+
+![ConvergenceHistory](https://user-images.githubusercontent.com/49178343/129746891-da8be9ce-2dbb-4d05-96c4-73d4ddf7a991.png)
+
 
 # Limitations
